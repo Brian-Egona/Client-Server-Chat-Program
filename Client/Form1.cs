@@ -45,5 +45,10 @@ namespace Client
                 MessageBox.Show($"Failed to connect to server: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
