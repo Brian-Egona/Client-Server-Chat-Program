@@ -36,12 +36,15 @@
             button1.BackColor = Color.FromArgb(128, 128, 255);
             button1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             button1.ForeColor = SystemColors.ButtonHighlight;
-            button1.Location = new Point(308, 167);
+
+            button1.Location = new Point(305, 176);
             button1.Name = "button1";
             button1.Size = new Size(190, 99);
-            button1.TabIndex = 0;
+            button1.TabIndex = 1;
+
             button1.Text = "Start Client";
             button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
             // Form1
             // 
