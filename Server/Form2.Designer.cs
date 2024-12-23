@@ -44,6 +44,7 @@
             listBox1.Name = "listBox1";
             listBox1.Size = new Size(194, 124);
             listBox1.TabIndex = 0;
+            listBox1.SelectedIndexChanged += listBox1_SelectedIndexChanged;
             // 
             // listBox2
             // 
@@ -83,6 +84,7 @@
             button1.TabIndex = 4;
             button1.Text = "Stop Server";
             button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
             // button2
             // 
@@ -95,6 +97,7 @@
             button2.TabIndex = 5;
             button2.Text = "Open Chat";
             button2.UseVisualStyleBackColor = false;
+            button2.Click += button2_Click;
             // 
             // Form2
             // 
