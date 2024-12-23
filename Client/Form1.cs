@@ -24,7 +24,7 @@ namespace Client
             try
             {
                 // Connect to the server (localhost:8888)
-                bool connected = client.Connect("127.0.0.1", 8888); // Ensure port matches server
+                bool connected = client.Connect("127.0.0.1", 8088); // Ensure port matches server
                 if (connected)
                 {
                     MessageBox.Show("Connected to server successfully!");
