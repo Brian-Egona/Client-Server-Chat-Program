@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows.Forms;
@@ -8,35 +7,52 @@ namespace Server
 {
     public partial class Form3 : Form
     {
-        private List<TcpClient> connectedClients;  // Store connected clients
-        private TcpClient selectedClient;          // Client selected from combobox
-        private NetworkStream stream;              // Stream for sending messages
+        private ServerConnection serverConnection;  // Use ServerConnection to manage clients
+        private TcpClient selectedClient;           // Client selected from ComboBox
+        private NetworkStream stream;
 
-        public Form3(List<TcpClient> clients)
+        public Form3(ServerConnection serverConn)
         {
             InitializeComponent();
-            connectedClients = clients;
+            serverConnection = serverConn;
+
+            // Populate ComboBox when Form3 is loaded
             PopulateClientsComboBox();
+
+            // Subscribe to message received event
+            serverConnection.MessageReceived += DisplayIncomingMessage;
+            serverConnection.ClientConnected += UpdateClientList;
         }
 
         // Populate ComboBox with connected clients
         private void PopulateClientsComboBox()
         {
             comboBox1.Items.Clear();
-            foreach (var client in connectedClients)
+            foreach (var client in serverConnection.GetConnectedClients())
             {
                 string clientInfo = ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString();
                 comboBox1.Items.Add(clientInfo);
             }
         }
 
-        // When client is selected from ComboBox
+        // Update ComboBox when a new client connects
+        private void UpdateClientList(string clientInfo)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => UpdateClientList(clientInfo)));
+                return;
+            }
+
+            comboBox1.Items.Add(clientInfo);
+        }
+
+        // When a client is selected from ComboBox
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             string selectedClientInfo = comboBox1.SelectedItem.ToString();
 
-            // Find the selected client by IP and Port
-            selectedClient = connectedClients.Find(client =>
+            selectedClient = serverConnection.GetConnectedClients().Find(client =>
                 ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString() == selectedClientInfo
             );
 
@@ -65,7 +81,13 @@ namespace Server
             }
         }
 
-        // Append messages to richTextBox
+        // Display incoming messages from clients
+        private void DisplayIncomingMessage(string message)
+        {
+            AppendText($"Client: {message}");
+        }
+
+        // Append messages to the RichTextBox
         private void AppendText(string message)
         {
             if (InvokeRequired)
@@ -78,13 +100,10 @@ namespace Server
             }
         }
 
-        // Stop the server and disconnect clients
+        // Stop the server and disconnect all clients
         private void button1_Click(object sender, EventArgs e)
         {
-            foreach (var client in connectedClients)
-            {
-                client.Close();
-            }
+            serverConnection.Stop();
             MessageBox.Show("Server stopped. Clients disconnected.");
             Application.Exit();
         }
@@ -93,16 +112,16 @@ namespace Server
         private void button2_Click(object sender, EventArgs e)
         {
             this.Hide();
-            Form2 form2 = new Form2();
+            Form2 form2 = new Form2(serverConnection);
             form2.Show();
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
         }

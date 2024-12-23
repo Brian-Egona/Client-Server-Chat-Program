@@ -1,49 +1,49 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Server
 {
     public partial class Form2 : Form
     {
-        private List<TcpClient> connectedClients = new List<TcpClient>();
+        private ServerConnection serverConnection;
         private ListBox[] listBoxes;
         private int clientIndex = 0;
 
-        public Form2()
+        public Form2(ServerConnection serverConn)
         {
             InitializeComponent();
+            serverConnection = serverConn;
 
             // Initialize listboxes into an array for scalability
             listBoxes = new ListBox[] { listBox1, listBox2, listBox3, listBox4 };
+
+            // Subscribe to events for client connection and disconnection
+            serverConnection.ClientConnected += AddClientToListBox;
+            serverConnection.MessageReceived += DisplayIncomingMessage;
         }
 
         // Method to add connected clients to listboxes in a round-robin fashion
-        public void AddClient(TcpClient client)
+        private void AddClientToListBox(string clientInfo)
         {
-            connectedClients.Add(client);
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => AddClientToListBox(clientInfo)));
+                return;
+            }
 
-            // Get client info (IP and port)
-            string clientInfo = ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString();
-
-            // Add client to the next listbox
             listBoxes[clientIndex].Items.Add(clientInfo);
-
-            // Increment index to the next listbox
             clientIndex = (clientIndex + 1) % listBoxes.Length;
         }
 
-        // Remove clients when they disconnect
-        public void RemoveClient(TcpClient client)
+        // Remove clients from listbox when they disconnect
+        public void RemoveClientFromListBox(string clientInfo)
         {
-            string clientInfo = ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString();
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => RemoveClientFromListBox(clientInfo)));
+                return;
+            }
 
             foreach (var listBox in listBoxes)
             {
@@ -53,33 +53,40 @@ namespace Server
                     break;
                 }
             }
-            connectedClients.Remove(client);
         }
 
-        //stop server button
+        // Stop Server Button
         private void button1_Click(object sender, EventArgs e)
         {
+            serverConnection.Stop();
+            MessageBox.Show("Server stopped. All clients disconnected.");
             Application.Exit();
         }
 
-        //Open chat(form 3)
+        // Open Chat (Form3) Button
         private void button2_Click(object sender, EventArgs e)
         {
-            if (connectedClients.Count == 0)
+            if (serverConnection.GetConnectedClients().Count == 0)
             {
                 MessageBox.Show("No clients connected. Please wait for clients to connect.", "Info");
                 return;
             }
 
-            // Pass the list of connected clients to Form3
-            Form3 chatForm = new Form3(connectedClients);
+            // Open Form3 and pass the serverConnection for chat handling
+            Form3 chatForm = new Form3(serverConnection);
             chatForm.Show();
             this.Hide();  // Hide Form2
         }
 
+        // Handle incoming messages (optional display in listbox)
+        private void DisplayIncomingMessage(string message)
+        {
+            // Future enhancement: Display incoming messages in one of the listboxes
+        }
+
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            // Placeholder for listbox item click logic (optional)
         }
     }
 }
