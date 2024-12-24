@@ -1,118 +1,144 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Text;
+using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Server
 {
     public partial class Form3 : Form
     {
-        private ServerConnection serverConnection;  // Use ServerConnection to manage clients
-        private TcpClient selectedClient;           // Client selected from ComboBox
-        private NetworkStream stream;
+        private ServerConnection serverConnection;
+        private Form2 form2; // Reference to Form2
 
-        public Form3(ServerConnection serverConn)
+        public Form3(ServerConnection serverConnection, Form2 form2)
         {
             InitializeComponent();
-            serverConnection = serverConn;
+            this.serverConnection = serverConnection;
+            this.form2 = form2;
 
-            // Populate ComboBox when Form3 is loaded
-            PopulateClientsComboBox();
+            InitializeComboBox();
 
-            // Subscribe to message received event
-            serverConnection.MessageReceived += DisplayIncomingMessage;
-            serverConnection.ClientConnected += UpdateClientList;
+            // Subscribe to message events from clients
+            this.serverConnection.MessageReceived += OnMessageReceived;
         }
 
-        // Populate ComboBox with connected clients
-        private void PopulateClientsComboBox()
+        private void Form3_Load(object sender, EventArgs e)
         {
+            // Load connected clients into combobox when the form loads
+            LoadConnectedClients();
+        }
+
+        // Initialize ComboBox options
+        private void InitializeComboBox()
+        {
+            comboBox1.Items.Add("Send to");
+            comboBox1.Items.Add("All");  // Broadcast option
+            comboBox1.SelectedIndex = 0;
+        }
+
+        // Refresh connected clients in ComboBox
+        private void LoadConnectedClients()
+        {
+            List<string> connectedClients = serverConnection.GetConnectedClients();
             comboBox1.Items.Clear();
-            foreach (var client in serverConnection.GetConnectedClients())
-            {
-                string clientInfo = ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString();
-                comboBox1.Items.Add(clientInfo);
-            }
+            InitializeComboBox();
+            comboBox1.Items.AddRange(connectedClients.ToArray());
         }
 
-        // Update ComboBox when a new client connects
-        private void UpdateClientList(string clientInfo)
+        // Append received messages from clients to RichTextBox
+        private void OnMessageReceived(int clientIndex, string message)
         {
-            if (InvokeRequired)
+            richTextBox1.Invoke(new Action(() =>
             {
-                Invoke(new Action(() => UpdateClientList(clientInfo)));
+                richTextBox1.AppendText($"Client {clientIndex + 1}: {message}{Environment.NewLine}");
+            }));
+        }
+
+        // Send message button (Text)
+        private void button4_Click(object sender, EventArgs e)
+        {
+            string message = textBox1.Text;
+            string selectedClient = comboBox1.SelectedItem.ToString();
+
+            if (comboBox1.SelectedIndex == 0)
+            {
+                MessageBox.Show("Please select a client to send the message.");
                 return;
             }
 
-            comboBox1.Items.Add(clientInfo);
-        }
-
-        // When a client is selected from ComboBox
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            string selectedClientInfo = comboBox1.SelectedItem.ToString();
-
-            selectedClient = serverConnection.GetConnectedClients().Find(client =>
-                ((System.Net.IPEndPoint)client.Client.RemoteEndPoint).ToString() == selectedClientInfo
-            );
-
-            if (selectedClient != null)
+            if (string.IsNullOrWhiteSpace(message))
             {
-                stream = selectedClient.GetStream();
-                AppendText($"Chatting with: {selectedClientInfo}");
+                MessageBox.Show("Please enter a message before sending.");
+                return;
             }
-        }
 
-        // Send message to selected client
-        private void buttonSend_Click(object sender, EventArgs e)
-        {
-            if (selectedClient != null && stream != null)
+            // Sending to all clients
+            if (selectedClient == "All")
             {
-                string message = textBox1.Text;
-                byte[] buffer = Encoding.ASCII.GetBytes($"Server: {message}");
-
-                stream.Write(buffer, 0, buffer.Length);
-                AppendText($"Me: {message}");
-                textBox1.Clear();
+                serverConnection.BroadcastMessage(message);
+                AppendToChatHistory($"Server (to All): {message}");
             }
             else
             {
-                MessageBox.Show("Please select a client to send a message.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                // Sending to a specific client
+                int clientIndex = int.Parse(selectedClient.Split(' ')[1]) - 1;
+                serverConnection.SendMessageToClient(clientIndex, message);
+                AppendToChatHistory($"Server (to {selectedClient}): {message}");
             }
+
+            textBox1.Clear();
         }
 
-        // Display incoming messages from clients
-        private void DisplayIncomingMessage(string message)
+        // Add attachment button (Send Image)
+        private void button3_Click(object sender, EventArgs e)
         {
-            AppendText($"Client: {message}");
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.jpg;*.png;*.gif;*.bmp"
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+                byte[] fileBytes = File.ReadAllBytes(filePath);
+                string selectedClient = comboBox1.SelectedItem.ToString();
+
+                if (selectedClient == "All")
+                {
+                    serverConnection.BroadcastFile(fileBytes);
+                    AppendToChatHistory($"Server (to All): Sent an image");
+                }
+                else
+                {
+                    int clientIndex = int.Parse(selectedClient.Split(' ')[1]) - 1;
+                    serverConnection.SendMessageToClient(clientIndex, "Sending image...");
+                    serverConnection.BroadcastFile(fileBytes);
+                    AppendToChatHistory($"Server (to {selectedClient}): Sent an image");
+                }
+            }
         }
 
-        // Append messages to the RichTextBox
-        private void AppendText(string message)
+        // Append messages to RichTextBox (Chat history)
+        private void AppendToChatHistory(string message)
         {
-            if (InvokeRequired)
+            richTextBox1.Invoke(new Action(() =>
             {
-                this.Invoke(new MethodInvoker(delegate { AppendText(message); }));
-            }
-            else
-            {
-                richTextBox1.AppendText(message + Environment.NewLine);
-            }
+                richTextBox1.AppendText($"{message}{Environment.NewLine}");
+            }));
         }
 
-        // Stop the server and disconnect all clients
+        // Stop Server Button
         private void button1_Click(object sender, EventArgs e)
         {
             serverConnection.Stop();
-            MessageBox.Show("Server stopped. Clients disconnected.");
+            MessageBox.Show("Server stopped.", "Server", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Application.Exit();
         }
 
-        // Close chatbox and return to Form2
+        // Close chat and return to Form2
         private void button2_Click(object sender, EventArgs e)
         {
             this.Hide();
-            Form2 form2 = new Form2(serverConnection);
             form2.Show();
         }
 
@@ -122,6 +148,10 @@ namespace Server
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
