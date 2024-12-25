@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -9,6 +11,7 @@ namespace Server
     {
         private ServerConnection serverConnection;
         private Form2 form2; // Reference to Form2
+        private string placeholderText = "Enter a Message";
 
         public Form3(ServerConnection serverConnection, Form2 form2)
         {
@@ -20,6 +23,13 @@ namespace Server
 
             // Subscribe to message events from clients
             this.serverConnection.MessageReceived += OnMessageReceived;
+
+            // Set placeholder initially
+            SetPlaceholder();
+
+            // Attach Enter and Leave events for the placeholder
+            textBox1.Enter += RemovePlaceholder;
+            textBox1.Leave += SetPlaceholder;
         }
 
         private void Form3_Load(object sender, EventArgs e)
@@ -54,6 +64,25 @@ namespace Server
             }));
         }
 
+        // Set the placeholder text
+        private void SetPlaceholder(object sender = null, EventArgs e = null)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                textBox1.Text = placeholderText;
+                textBox1.ForeColor = System.Drawing.Color.Gray;
+            }
+        }
+
+        // Remove placeholder text when user clicks inside the TextBox
+        private void RemovePlaceholder(object sender, EventArgs e)
+        {
+            if (textBox1.Text == placeholderText)
+            {
+                textBox1.Text = "";
+                textBox1.ForeColor = System.Drawing.Color.Black;
+            }
+        }
         // Send message button (Text)
         private void button4_Click(object sender, EventArgs e)
         {
