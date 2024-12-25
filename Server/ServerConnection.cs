@@ -114,6 +114,8 @@ namespace Server
                     if (messageType == "TEXT")
                     {
                         Console.WriteLine($"Message received from Client {clientIndex + 1}: {messageContent}");
+
+                        // Trigger MessageReceived event to notify Form3
                         MessageReceived?.Invoke(clientIndex, messageContent);
                     }
                 }
@@ -124,17 +126,15 @@ namespace Server
             }
             finally
             {
-                lock (clients)
-                {
-                    clients.Remove(client);
-                    clientIndices.Remove(client);
-                    client.Close();
-                }
-                Console.WriteLine($"Client {clientIndex + 1} disconnected.");
-                ClientStatusChanged?.Invoke(clientIndex, false);  // Trigger event on disconnect
+                clients.Remove(client);
+                clientIndices.Remove(client);
+                client.Close();
+                Console.WriteLine("Client disconnected.");
+
+                // Trigger client status update on Form2
+                ClientStatusChanged?.Invoke(clientIndex, false);
             }
         }
-
 
         public List<string> GetConnectedClients()
         {
