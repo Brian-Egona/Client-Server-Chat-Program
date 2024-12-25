@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -10,7 +8,7 @@ namespace Server
     public partial class Form3 : Form
     {
         private ServerConnection serverConnection;
-        private Form2 form2; // Reference to Form2
+        private Form2 form2;  // Reference to Form2
         private string placeholderText = "Enter a Message";
 
         public Form3(ServerConnection serverConnection, Form2 form2)
@@ -23,6 +21,9 @@ namespace Server
 
             // Subscribe to message events from clients
             this.serverConnection.MessageReceived += OnMessageReceived;
+
+            // Subscribe to client status changes (for updating ComboBox)
+            this.serverConnection.ClientStatusChanged += OnClientStatusChanged;
 
             // Set placeholder initially
             SetPlaceholder();
@@ -55,12 +56,21 @@ namespace Server
             comboBox1.Items.AddRange(connectedClients.ToArray());
         }
 
+        // Update ComboBox when client status changes
+        private void OnClientStatusChanged(int clientIndex, bool isConnected)
+        {
+            Invoke(new Action(() =>
+            {
+                LoadConnectedClients();  // Reload clients when status changes
+            }));
+        }
+
         // Append received messages from clients to RichTextBox
         private void OnMessageReceived(int clientIndex, string message)
         {
             richTextBox1.Invoke(new Action(() =>
             {
-                richTextBox1.AppendText($"Client {clientIndex} {message}{Environment.NewLine}");
+                richTextBox1.AppendText($"Client {clientIndex + 1}: {message}{Environment.NewLine}");
             }));
         }
 
@@ -84,7 +94,6 @@ namespace Server
             }
         }
 
-
         // Append messages to RichTextBox (Chat history)
         private void AppendToChatHistory(string message)
         {
@@ -105,24 +114,12 @@ namespace Server
         // Close chat and return to Form2
         private void button2_Click(object sender, EventArgs e)
         {
+            form2.RefreshClientStatus();  // Update the client status before showing Form2
             this.Hide();
             form2.Show();
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
+        // Send message button (Text)
         private void button3_Click_1(object sender, EventArgs e)
         {
             string message = textBox1.Text;
@@ -134,7 +131,7 @@ namespace Server
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrWhiteSpace(message) || message == placeholderText)
             {
                 MessageBox.Show("Please enter a message before sending.");
                 return;
@@ -155,6 +152,21 @@ namespace Server
             }
 
             textBox1.Clear();
+            SetPlaceholder();  // Reset placeholder after sending
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -55,6 +55,29 @@ namespace Server
             }));
         }
 
+        public void RefreshClientStatus()
+        {
+            // Get the list of currently connected clients
+            List<string> connectedClients = serverConnection.GetConnectedClients();
+
+            // Clear all listboxes (reset to "Disconnected")
+            listBox1.Items.Clear();
+            listBox2.Items.Clear();
+            listBox3.Items.Clear();
+            listBox4.Items.Clear();
+
+            // Initialize all clients as disconnected
+            InitializePCStatus();
+
+            // Update the connected clients in the listboxes
+            foreach (string client in connectedClients)
+            {
+                int clientIndex = int.Parse(client.Split(' ')[1]) - 1;
+                UpdatePCStatus(clientIndex, true);  // Update to "Connected" for active clients
+            }
+        }
+
+
         // Stop Server Button (Button 1)
         private void button1_Click(object sender, EventArgs e)
         {

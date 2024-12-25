@@ -59,23 +59,42 @@ namespace Server
 
         private void AcceptClients()
         {
-            int clientIndex = 0;
+            int clientIndex = 0;  // Initial index for clients
 
             while (isRunning)
             {
-                TcpClient client = tcpListener.AcceptTcpClient();
-                clients.Add(client);
-                clientIndices.Add(client, clientIndex);
-                Console.WriteLine($"Client connected: {((IPEndPoint)client.Client.RemoteEndPoint).Address}");
+                try
+                {
+                    TcpClient client = tcpListener.AcceptTcpClient();  // Blocking call
+                    clients.Add(client);
+                    clientIndices.Add(client, clientIndex);  // Map client to index
 
-                ClientStatusChanged?.Invoke(clientIndex, true);
+                    Console.WriteLine($"Client connected: {((IPEndPoint)client.Client.RemoteEndPoint).Address}");
 
-                Thread clientThread = new Thread(() => HandleClient(client, clientIndex));
-                clientThread.Start();
+                    ClientStatusChanged?.Invoke(clientIndex, true);  // Notify Form2
 
-                clientIndex++;
+                    Thread clientThread = new Thread(() => HandleClient(client, clientIndex));
+                    clientThread.Start();
+
+                    clientIndex++;
+                }
+                catch (SocketException ex)
+                {
+                    if (isRunning)
+                    {
+                        // Log if the server is running but still encountered an error
+                        Console.WriteLine($"SocketException: {ex.Message}");
+                    }
+                    else
+                    {
+                        // If the server is not running, exit the loop (graceful shutdown)
+                        Console.WriteLine("Server stopped, exiting AcceptClients loop.");
+                        break;
+                    }
+                }
             }
         }
+
 
         private void HandleClient(TcpClient client, int clientIndex)
         {
@@ -99,19 +118,6 @@ namespace Server
                         // Trigger MessageReceived event to notify Form3
                         MessageReceived?.Invoke(clientIndex, messageContent);
                     }
-                    else if (messageType == "IMG ")
-                    {
-                        string filePath = "received_image.png";
-                        using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                        {
-                            fs.Write(buffer, 4, bytesRead - 4);
-                            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
-                            {
-                                fs.Write(buffer, 0, bytesRead);
-                            }
-                        }
-                        Console.WriteLine("Image received.");
-                    }
                 }
             }
             catch (Exception ex)
@@ -124,6 +130,8 @@ namespace Server
                 clientIndices.Remove(client);
                 client.Close();
                 Console.WriteLine("Client disconnected.");
+
+                // Trigger client status update on Form2
                 ClientStatusChanged?.Invoke(clientIndex, false);
             }
         }
@@ -176,25 +184,5 @@ namespace Server
             }
         }
 
-        public void BroadcastFile(byte[] fileBytes)
-        {
-            byte[] header = Encoding.ASCII.GetBytes("IMG ");
-            byte[] buffer = new byte[header.Length + fileBytes.Length];
-            Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            Buffer.BlockCopy(fileBytes, 0, buffer, header.Length, fileBytes.Length);
-
-            foreach (var client in clients)
-            {
-                try
-                {
-                    NetworkStream stream = client.GetStream();
-                    stream.Write(buffer, 0, buffer.Length);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending file to client: {ex.Message}");
-                }
-            }
-        }
     }
 }
