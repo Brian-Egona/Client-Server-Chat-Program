@@ -53,7 +53,12 @@ namespace Server
             List<string> connectedClients = serverConnection.GetConnectedClients();
             comboBox1.Items.Clear();
             InitializeComboBox();
-            comboBox1.Items.AddRange(connectedClients.ToArray());
+
+            // Only add clients if they exist
+            if (connectedClients.Count > 0)
+            {
+                comboBox1.Items.AddRange(connectedClients.ToArray());
+            }
         }
 
         // Update ComboBox when client status changes
