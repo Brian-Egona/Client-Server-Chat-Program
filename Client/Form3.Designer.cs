@@ -74,6 +74,7 @@
             button2.Size = new Size(117, 56);
             button2.TabIndex = 3;
             button2.Text = "Disconnect from Server";
+            button2.UseMnemonic = false;
             button2.UseVisualStyleBackColor = false;
             button2.Click += button2_Click;
             // 

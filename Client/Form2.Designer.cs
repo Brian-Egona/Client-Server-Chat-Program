@@ -32,7 +32,6 @@
             listBox1 = new ListBox();
             button1 = new Button();
             button2 = new Button();
-            button3 = new Button();
             SuspendLayout();
             // 
             // label1
@@ -63,7 +62,7 @@
             button1.Name = "button1";
             button1.Size = new Size(148, 43);
             button1.TabIndex = 2;
-            button1.Text = "Select User";
+            button1.Text = "Open Chat";
             button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
@@ -71,24 +70,13 @@
             // 
             button2.BackColor = Color.FromArgb(192, 0, 0);
             button2.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            button2.Location = new Point(12, 124);
+            button2.Location = new Point(12, 198);
             button2.Name = "button2";
             button2.Size = new Size(126, 57);
             button2.TabIndex = 3;
-            button2.Text = "Disconnect froim Server";
+            button2.Text = "Disconnect from Server";
             button2.UseVisualStyleBackColor = false;
             button2.Click += button2_Click;
-            // 
-            // button3
-            // 
-            button3.BackColor = Color.FromArgb(128, 128, 255);
-            button3.Location = new Point(12, 204);
-            button3.Name = "button3";
-            button3.Size = new Size(126, 54);
-            button3.TabIndex = 4;
-            button3.Text = "Open Chat";
-            button3.UseVisualStyleBackColor = false;
-            button3.Click += button3_Click;
             // 
             // Form2
             // 
@@ -96,7 +84,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(800, 450);
-            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(listBox1);
@@ -114,6 +101,5 @@
         private ListBox listBox1;
         private Button button1;
         private Button button2;
-        private Button button3;
     }
 }

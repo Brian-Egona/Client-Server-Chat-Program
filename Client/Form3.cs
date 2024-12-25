@@ -5,40 +5,65 @@ namespace Client
 {
     public partial class Form3 : Form
     {
-        private ClientConnection connection;
-        private string selectedClient;
+        private ClientConnection clientConnection;
+        private Form2 form2;  // Reference to Form2 for navigation
+        private string placeholderText = "Enter a Message";
 
-        public Form3(ClientConnection clientConn, string client)
+        public Form3(ClientConnection clientConnection, Form2 form2)
         {
             InitializeComponent();
-            connection = clientConn;
-            selectedClient = client;
+            this.clientConnection = clientConnection;
+            this.form2 = form2;
+            this.clientConnection.MessageReceived += OnMessageReceived;
 
-            // Subscribe to the message received event
-            connection.MessageReceived += DisplayIncomingMessage;
+            // Set placeholder initially
+            SetPlaceholder();
+
+            // Attach Enter and Leave events
+            textBox1.Enter += RemovePlaceholder;
+            textBox1.Leave += SetPlaceholder;
         }
 
-        // Form Load
-        private void Form3_Load(object sender, EventArgs e)
+        // Set the placeholder text
+        private void SetPlaceholder(object sender = null, EventArgs e = null)
         {
-            richTextBox1.AppendText($"Chatting with: {selectedClient}\n");
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                textBox1.Text = placeholderText;
+                textBox1.ForeColor = System.Drawing.Color.Gray;
+            }
         }
 
-        // Handle Message TextBox (Optional Validation)
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        // Remove placeholder text when the user starts typing
+        private void RemovePlaceholder(object sender, EventArgs e)
         {
-            // Optional: Limit message length or validate input
+            if (textBox1.Text == placeholderText)
+            {
+                textBox1.Text = "";
+                textBox1.ForeColor = System.Drawing.Color.Black;
+            }
         }
 
-        // Send Button Click - Send message through ClientConnection
+        // Event handler for receiving messages from the server
+        private void OnMessageReceived(string message)
+        {
+            richTextBox1.Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText("Server: " + message + Environment.NewLine);
+            }));
+        }
+
+        // Send message button
         private void button1_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(textBox1.Text))
+            string message = textBox1.Text;
+
+            if (!string.IsNullOrWhiteSpace(message) && message != placeholderText)
             {
-                // Send message to the server using ClientConnection
-                connection.SendMessage($"{selectedClient}: {textBox1.Text}");
-                AppendMessage($"Me: {textBox1.Text}");
+                clientConnection.SendMessage(message);
+                richTextBox1.AppendText("You: " + message + Environment.NewLine);
                 textBox1.Clear();
+                SetPlaceholder();  // Reset placeholder after sending
             }
             else
             {
@@ -46,39 +71,31 @@ namespace Client
             }
         }
 
-        // Disconnect Button Click
+        // Disconnect from server button
         private void button2_Click(object sender, EventArgs e)
         {
-            connection.Disconnect();
-            MessageBox.Show("Disconnected from server.");
-            Application.Exit();
+            clientConnection.Disconnect();
+            form2.UpdateServerStatus(false);  // Update Form2 status
+            MessageBox.Show("Disconnected from server.", "Client");
+            this.Hide();
+            form2.Show();  // Return to Form2
         }
 
-        // Close Chat Button (Return to Form2)
+        // Close chat button
         private void button3_Click(object sender, EventArgs e)
         {
             this.Hide();
-            Form2 form2 = new Form2(connection);
             form2.Show();
         }
 
-        // Display incoming messages in the chat display (RichTextBox)
-        private void DisplayIncomingMessage(string message)
+        private void Form3_Load(object sender, EventArgs e)
         {
-            AppendMessage($"Server: {message}");
+
         }
 
-        // Append message to RichTextBox
-        private void AppendMessage(string message)
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action(() => richTextBox1.AppendText(message + Environment.NewLine)));
-            }
-            else
-            {
-                richTextBox1.AppendText(message + Environment.NewLine);
-            }
+
         }
     }
 }

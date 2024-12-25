@@ -50,7 +50,7 @@ namespace Server
         {
             richTextBox1.Invoke(new Action(() =>
             {
-                richTextBox1.AppendText($"Client {clientIndex + 1}: {message}{Environment.NewLine}");
+                richTextBox1.AppendText($"Client {clientIndex} {message}{Environment.NewLine}");
             }));
         }
 

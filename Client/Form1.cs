@@ -5,50 +5,36 @@ namespace Client
 {
     public partial class Form1 : Form
     {
-        private ClientConnection client;
+        private ClientConnection clientConnection;
 
         public Form1()
         {
             InitializeComponent();
-            client = new ClientConnection();  // Instantiate ClientConnection
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-            // Optional: Placeholder if label is clicked (no need for logic here)
         }
 
         // Start Client Button Click
         private void button1_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // Connect to the server (localhost:8888)
-                bool connected = client.Connect("127.0.0.1", 8088); // Ensure port matches server
-                if (connected)
-                {
-                    MessageBox.Show("Connected to server successfully!");
+            clientConnection = new ClientConnection("127.0.0.1", 8080); // Connect to server at localhost:8080
 
-                    // Transition to Form2 (Connected Users)
-                    Form2 connectedUsersForm = new Form2(client);
-                    connectedUsersForm.Show();
-                    this.Hide();
-                }
-                else
-                {
-                    MessageBox.Show("Failed to connect to server. Please check if the server is running.", 
-                        "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-            catch (Exception ex)
+            if (clientConnection.Connect())
             {
-                MessageBox.Show($"Failed to connect to server: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Connected to server.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Open Form2 and pass the clientConnection object
+                Form2 form2 = new Form2(clientConnection);
+                form2.Show();
+                this.Hide();  // Hide Form1 after successful connection
+            }
+            else
+            {
+                MessageBox.Show("Failed to connect to server.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            
         }
     }
 }
