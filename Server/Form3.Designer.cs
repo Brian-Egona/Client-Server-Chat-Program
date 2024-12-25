@@ -33,6 +33,7 @@
             button2 = new Button();
             textBox1 = new TextBox();
             comboBox1 = new ComboBox();
+            button3 = new Button();
             SuspendLayout();
             // 
             // richTextBox1
@@ -88,10 +89,22 @@
             comboBox1.FormattingEnabled = true;
             comboBox1.Location = new Point(567, 376);
             comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(111, 36);
+            comboBox1.Size = new Size(136, 36);
             comboBox1.TabIndex = 4;
-            comboBox1.Text = "Send to";
+            comboBox1.Text = "Select Client";
             comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            // 
+            // button3
+            // 
+            button3.BackColor = Color.Navy;
+            button3.ForeColor = SystemColors.Control;
+            button3.Location = new Point(567, 418);
+            button3.Name = "button3";
+            button3.Size = new Size(81, 29);
+            button3.TabIndex = 5;
+            button3.Text = "Send";
+            button3.UseVisualStyleBackColor = false;
+            button3.Click += button3_Click_1;
             // 
             // Form3
             // 
@@ -99,6 +112,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(800, 450);
+            Controls.Add(button3);
             Controls.Add(comboBox1);
             Controls.Add(textBox1);
             Controls.Add(button2);
@@ -117,5 +131,6 @@
         private Button button2;
         private TextBox textBox1;
         private ComboBox comboBox1;
+        private Button button3;
     }
 }

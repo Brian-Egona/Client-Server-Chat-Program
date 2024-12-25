@@ -83,69 +83,7 @@ namespace Server
                 textBox1.ForeColor = System.Drawing.Color.Black;
             }
         }
-        // Send message button (Text)
-        private void button4_Click(object sender, EventArgs e)
-        {
-            string message = textBox1.Text;
-            string selectedClient = comboBox1.SelectedItem.ToString();
 
-            if (comboBox1.SelectedIndex == 0)
-            {
-                MessageBox.Show("Please select a client to send the message.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                MessageBox.Show("Please enter a message before sending.");
-                return;
-            }
-
-            // Sending to all clients
-            if (selectedClient == "All")
-            {
-                serverConnection.BroadcastMessage(message);
-                AppendToChatHistory($"Server (to All): {message}");
-            }
-            else
-            {
-                // Sending to a specific client
-                int clientIndex = int.Parse(selectedClient.Split(' ')[1]) - 1;
-                serverConnection.SendMessageToClient(clientIndex, message);
-                AppendToChatHistory($"Server (to {selectedClient}): {message}");
-            }
-
-            textBox1.Clear();
-        }
-
-        // Add attachment button (Send Image)
-        private void button3_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Image Files|*.jpg;*.png;*.gif;*.bmp"
-            };
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                string filePath = openFileDialog.FileName;
-                byte[] fileBytes = File.ReadAllBytes(filePath);
-                string selectedClient = comboBox1.SelectedItem.ToString();
-
-                if (selectedClient == "All")
-                {
-                    serverConnection.BroadcastFile(fileBytes);
-                    AppendToChatHistory($"Server (to All): Sent an image");
-                }
-                else
-                {
-                    int clientIndex = int.Parse(selectedClient.Split(' ')[1]) - 1;
-                    serverConnection.SendMessageToClient(clientIndex, "Sending image...");
-                    serverConnection.BroadcastFile(fileBytes);
-                    AppendToChatHistory($"Server (to {selectedClient}): Sent an image");
-                }
-            }
-        }
 
         // Append messages to RichTextBox (Chat history)
         private void AppendToChatHistory(string message)
@@ -183,6 +121,40 @@ namespace Server
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            string message = textBox1.Text;
+            string selectedClient = comboBox1.SelectedItem.ToString();
+
+            if (comboBox1.SelectedIndex == 0)
+            {
+                MessageBox.Show("Please select a client to send the message.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                MessageBox.Show("Please enter a message before sending.");
+                return;
+            }
+
+            // Sending to all clients
+            if (selectedClient == "All")
+            {
+                serverConnection.BroadcastMessage(message);
+                AppendToChatHistory($"Server (to All): {message}");
+            }
+            else
+            {
+                // Sending to a specific client
+                int clientIndex = int.Parse(selectedClient.Split(' ')[1]) - 1;
+                serverConnection.SendMessageToClient(clientIndex, message);
+                AppendToChatHistory($"Server (to {selectedClient}): {message}");
+            }
+
+            textBox1.Clear();
         }
     }
 }
