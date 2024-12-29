@@ -7,7 +7,7 @@
 # 📋 Project Overview
 
 The Client-Server Chat Program is a Windows Forms application designed to facilitate real-time communication between a server and a single client over a local network. This project simulates the behavior of a basic one-on-one chatroom, enabling text-based communication between the client and the server. Built in C# with .NET, the program uses TCP connections to establish a simple and efficient communication channel.
----
+
 # ⚙️ Key Features
 
 Real-Time Messaging – Supports bidirectional text messaging between the server and a single client.
@@ -16,14 +16,14 @@ Placeholder Text – Input fields include placeholder text that disappears when 
 Server Control – The server can disconnect the client and shut down the communication channel.
 Client Disconnection – Clients can disconnect from the server, with status updates reflected on the server side.
 Dynamic Connection Status – The server tracks the connection status of the client and displays it in the control panel (Form2).
----
+
 # 🛠️ Planned Enhancements
 
 Multi-Client Support – Extend the server to handle multiple client connections simultaneously.
 Direct and Broadcast Messaging – Enable the server to broadcast messages to all connected clients or message individual clients.
 File Sending – Implement file/image transfer between the server and clients.
 Client List Display – Dynamically update and display the list of connected clients in the server chat interface.
----
+
 # 🖥️ Application Structure
 
 The program consists of three primary forms for both the client and server:
@@ -35,7 +35,7 @@ On the client side, shows the status of the connection and provides access to th
 - Form3 (Chat Interface)
 The main chat interface for messaging between the server and client.
 RichTextBox is used to display chat history, and a ComboBox on the server side (currently limited to "All") is in place for future multi-client support.
----
+
 # 🔧 Technologies Used
 
 Language: C#
@@ -45,7 +45,7 @@ Framework: .NET (Windows Forms)
 Networking: TCP/IP (System.Net.Sockets)
 
 IDE: Visual Studio
----
+
 
 # 🚀 How to Run
 
